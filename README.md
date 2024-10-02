@@ -4,33 +4,31 @@ This module has a dependency on the Abeta Magento 2 module.
 ## Installation
 
 
-1. Unzip the ZIP file obtained from Abeta
-
-2. Create a folder next to the `PunchOut` folder inside `app/code/Abeta/`. This will result in two different folders:
-- app/code/Abeta/HyvaPunchOut
-- app/code/Abeta/PunchOut
-
-3. Place all unpacked files inside the _HyvaPunchOut_ folder.
-
-4. Enable the module:
+1. Install the module using composer:
 
 ```bash
-bin/magento module:enable Abeta_HyvaPunchOut
+composer composer require abeta-io/magento2-hyva
 ```
 
-5. Upgrade the database:
+2. Enable the module:
+
+```bash
+bin/magento module:enable Abeta_HyvaPunchOut 
+```
+
+3. Upgrade the database:
 
 ```bash
 bin/magento setup:upgrade
 ```
 
-6. Let Hyvä know about the new module:
+4. Let Hyvä know about the new module:
 
 ```bash
 php bin/magento hyva:config:generate
 ```
 
-7. Generate the CSS files:
+5. Generate the CSS files:
 
 ```bash
 npm --prefix vendor/hyva-themes/magento2-default-theme/web/tailwind/ run ci
