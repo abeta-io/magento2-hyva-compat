@@ -1,0 +1,136 @@
+<?php
+/* @var \Abeta\PunchOut\Block\Cart\Button $block */
+$buttonText = $block->getButtonLabel();
+?>
+
+<?php if ($block->isNeedToShow()): ?>
+    <?php if ($block->useModal()): ?>
+        <div class="punch-out-button-wrapper" x-data="{...initPunchOutModal(), ...hyva.modal()}">
+            <button class="btn btn-primary justify-center p-3 w-full punch-out"
+                    id="punch-out-button"
+                    type="button"
+                    title="<?= $block->escapeHTML($buttonText); ?>"
+                    @click="openModal">
+                <?= $block->escapeHTML($buttonText); ?>
+            </button>
+
+            <div x-cloak x-spread="overlay()" x-bind="overlay()"
+                 class="fixed inset-0 flex items-center justify-center text-left bg-black bg-opacity-50 z-30">
+                <div x-ref="dialog" role="dialog" aria-labelledby="the-label"
+                     class="inline-block max-h-screen overflow-auto bg-white shadow-xl 
+                            rounded-lg p-10 text-gray-700 w-[90%] max-w-3xl">
+                    
+                    <h2 class="text-2xl font-medium text-gray-900 title-font pb-3 mb-6 border-b-2 border-gray-300">
+                        <?= $block->escapeHtml(__('Order data for PunchOut session')) ?>
+                    </h2>
+
+                    <div id="punch-out-button-modal">
+                        <template x-if="message">
+                            <div class="message mb-6" x-text="message" :class="messageClass"><div>
+                        </template>
+
+                        <template x-if="isInfoShow">
+                            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                    <tr>
+                                        <th class="px-6 py-3">
+                                            <?= $block->escapeHtml(__('Product name')) ?>
+                                        </th>
+                                        <th class="px-6 py-3" width="120px">
+                                            <?= $block->escapeHtml(__('Qty')) ?>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="item in items">
+                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                            <td x-text="item.name" class="px-6 py-4"></td>
+                                            <td x-text="item.qty" class="px-6 py-4"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-8">
+                        <template x-if="isInfoShow">
+                            <button class="btn btn-primary justify-center px-5 py-2.5 text-sm abeta-process"
+                                    type="button"
+                                    title="<?= $block->escapeHTML($buttonText); ?>"
+                                    @click="punchOut">
+                                <?= $block->escapeHTML($buttonText); ?>
+                            </button>
+                        </template>
+
+                        <button class="btn btn-primary justify-center px-5 py-2.5 text-sm abeta-close"
+                                type="button"
+                                title="<?= $block->escapeHtml(__('Close')) ?>"
+                                @click="cancel">
+                            <?= $block->escapeHtml(__('Close')) ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <?= $block->getChildHtml('abeta_loading'); ?>
+        </div>
+
+        <script>
+            const initPunchOutModal = () => ({
+                isLoading: false,
+                items: [],
+                message: '',
+                messageClass: '',
+                isInfoShow: true,
+                request: {
+                    redirect: '',
+                    cart: `${window.location.origin}/rest/V1/abeta/cart`,
+                    checkout: `${window.location.origin}/rest/V1/abeta/checkout`,
+                },
+
+                openModal() {
+                    this.fetchData(this.request.cart, (data) => { this.items = data[0]; this.show(); });
+                },
+
+                punchOut() {
+                    this.fetchData(this.request.checkout, this.getCheckout.bind(this));
+                },
+
+                fetchData(request, callback) {
+                    this.isLoading = true;
+
+                    fetch(request)
+                        .then((resp) => resp.json())
+                        .then((json) => callback(json))
+                        .finally(() => this.isLoading = false);
+                },
+
+                getCheckout(data) {
+                    this.message = data[0].message || '';
+                    this.messageClass = data[0].success === true ? 'success' : 'error';
+
+                    if (data[0].success === true) {
+                        this.isInfoShow = false;
+                        this.request.redirect = data[0]['redirect_url'];
+
+                        window.dispatchEvent(new Event('reload-customer-section-data'));
+                        window.location.href = this.request.redirect;
+                    }
+                },
+            });
+        </script>
+    <?php else: ?>
+        <div class="punch-out-button-wrapper">
+            <a href="<?= $block->escapeUrl($block->getPunchOutUrl()); ?>" 
+               class="btn btn-primary justify-center p-3 punch-out">
+                <?= $block->escapeHTML($buttonText); ?>
+            </a>
+        </div>
+    <?php endif; ?>
+
+    <style>
+        #checkout-link-button { display: none !important; }
+        .cart-form { position: relative; z-index: 10; }
+    </style>
+<?php endif; ?>
