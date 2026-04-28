@@ -132,8 +132,8 @@ $buttonText = $block->getButtonLabel();
         </script>
     <?php else: ?>
         <div class="punch-out-button-wrapper">
-            <a href="<?= $block->escapeUrl($block->getPunchOutUrl()); ?>" 
-               class="btn btn-primary justify-center p-3 punch-out">
+            <a href="<?= $block->escapeUrl($block->getPunchOutUrl()); ?>"
+               class="btn btn-primary justify-center p-3 punch-out no-preload">
                 <?= $block->escapeHtml($buttonText); ?>
             </a>
         </div>
